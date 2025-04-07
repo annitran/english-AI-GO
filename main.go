@@ -1,19 +1,16 @@
 package main
 
-import "fmt"
-
-func add(a, b, c int) int {
-	return a + b + c
-}
-
-func change(sls []int) {
-	sls[2] = 50
-	sls[3] = 0
-}
+import (
+	"english-ai-go/math"
+	"fmt"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
+)
 
 func main() {
 	// Hàm tính tổng
-	sum := add(5, 4, 10)
+	sum := math.Add(5, 4, 10)
 	fmt.Println("5 + 4 + 10 =", sum)
 
 	// Mảng, vòng lặp
@@ -49,6 +46,21 @@ func main() {
 	fmt.Println("Giá trị của c là:", *c)
 
 	// thay đổi 1 vài phần tử trong num2 thông qua con trỏ trong hàm
-	change(num2[:])
+	math.Change(num2[:])
 	fmt.Println("num2 sau khi thay đổi là:", num2)
+
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Lỗi: Không tìm thấy file .env")
+	}
+
+	// Lấy biến từ môi trường
+	port := os.Getenv("PORT")
+	dbUser := os.Getenv("DB_USER")
+	dbPass := os.Getenv("DB_PASS")
+
+	fmt.Println("\nCổng:", port)
+	fmt.Println("DB User:", dbUser)
+	fmt.Println("DB Pass:", dbPass)
 }

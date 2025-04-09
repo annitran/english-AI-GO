@@ -99,4 +99,17 @@ func main() {
 	fmt.Println(d.Speak())
 	d = interfaces.Cat{}
 	fmt.Println(d.Speak())
+
+	// constructor
+	p1 := methods.NewPersonValue("Jason", 33)
+	p2 := methods.NewPersonPointer("Hana", 25)
+	fmt.Println("\nBefore")
+	p1.ShowValue()
+	p2.ShowPointer()
+
+	p1.ChangeValue("David")
+	p2.ChangePointer("Rachel")
+	fmt.Println("After")
+	p1.ShowValue()
+	p2.ShowPointer()
 }

@@ -101,8 +101,8 @@ func main() {
 	fmt.Println(d.Speak())
 
 	// constructor
-	p1 := methods.NewPersonValue("Jason", 33)
-	p2 := methods.NewPersonPointer("Hana", 25)
+	p1 := methods.NewPerson("Jason", 33)
+	p2 := methods.NewPerson("Hana", 25)
 	fmt.Println("\nBefore")
 	p1.ShowValue()
 	p2.ShowPointer()

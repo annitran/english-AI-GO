@@ -9,11 +9,8 @@ type person struct {
 }
 
 // hàm khởi tạo
-func NewPersonValue(name string, age int) person {
+func NewPerson(name string, age int) person {
 	return person{Name: name, Age: age}
-}
-func NewPersonPointer(name string, age int) *person {
-	return &person{Name: name, Age: age}
 }
 
 // methods

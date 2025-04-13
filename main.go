@@ -1,7 +1,10 @@
 package main
 
 import (
+	"english-ai-go/interfaces"
 	"english-ai-go/math"
+	"english-ai-go/methods"
+
 	"fmt"
 	"github.com/joho/godotenv"
 	"log"
@@ -63,4 +66,50 @@ func main() {
 	fmt.Println("\nCổng:", port)
 	fmt.Println("DB User:", dbUser)
 	fmt.Println("DB Pass:", dbPass)
+
+	// Methods
+	p := methods.Person{Name: "Anna", Height: 155}
+	p.ShowDetail()
+
+	// receiver
+	// vd1
+	p.ChangeHeight(170) // ko thay đổi dữ liệu
+	fmt.Println("\nvalue receiver height:", p.Height)
+
+	p.ChangeHeight2(162) // thay đổi dữ liệu
+	fmt.Println("pointer receiver height:", p.Height)
+
+	// vd2
+	p.SetName("Mike")
+	p.SetHeight(180)
+	fmt.Println("pointer receiver name:", p.Name)
+	fmt.Println("pointer receiver height:", p.Height)
+
+	// int
+	var n methods.MyInt = 10
+	fmt.Println("\nKết quả:", n.CheckInt())
+	// string
+	var s methods.MyString = "hello"
+	fmt.Println(s.CheckString())
+
+	// interface
+	var d interfaces.Animal
+
+	d = interfaces.Dog{}
+	fmt.Println(d.Speak())
+	d = interfaces.Cat{}
+	fmt.Println(d.Speak())
+
+	// constructor
+	p1 := methods.NewPerson("Jason", 33)
+	p2 := methods.NewPerson("Hana", 25)
+	fmt.Println("\nBefore")
+	p1.ShowValue()
+	p2.ShowPointer()
+
+	p1.ChangeValue("David")
+	p2.ChangePointer("Rachel")
+	fmt.Println("After")
+	p1.ShowValue()
+	p2.ShowPointer()
 }

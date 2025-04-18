@@ -5,19 +5,19 @@ import (
 	"net/http"
 )
 
-type handler struct{}
+type messageHandler struct{}
 
-func NewMessageHandler() handler {
-	return handler{}
+func NewMessageHandler() *messageHandler {
+	return &messageHandler{}
 }
 
-func (h *handler) CreatGet(c *gin.Context) {
+func (h *messageHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Hello!",
 	})
 }
 
-func (h *handler) CreatPost(c *gin.Context) {
+func (h *messageHandler) Creat(c *gin.Context) {
 	name := c.PostForm("name")
 	age := c.PostForm("age")
 

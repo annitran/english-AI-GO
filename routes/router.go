@@ -10,8 +10,8 @@ func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	messageHandler := handlers.NewMessageHandler()
 
-	router.GET("/api/v1/message", messageHandler.CreatGet)
-	router.POST("/api/v1/message/submit", messageHandler.CreatPost)
+	router.GET("/api/v1/message", messageHandler.Get)
+	router.POST("/api/v1/message/submit", messageHandler.Creat)
 
 	return router
 }

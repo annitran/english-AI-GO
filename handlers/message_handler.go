@@ -17,7 +17,7 @@ func (h *messageHandler) Get(c *gin.Context) {
 	})
 }
 
-func (h *messageHandler) Creat(c *gin.Context) {
+func (h *messageHandler) Create(c *gin.Context) {
 	name := c.PostForm("name")
 	age := c.PostForm("age")
 

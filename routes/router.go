@@ -11,7 +11,7 @@ func SetupRouter() *gin.Engine {
 	messageHandler := handlers.NewMessageHandler()
 
 	router.GET("/api/v1/message", messageHandler.Get)
-	router.POST("/api/v1/message/submit", messageHandler.Creat)
+	router.POST("/api/v1/message", messageHandler.Create)
 
 	return router
 }

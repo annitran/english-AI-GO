@@ -23,7 +23,7 @@ func (h *messageHandler) Create(c *gin.Context) {
 
 	if name == "" || age == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Kiểm tra lại 'name' hoặc 'age'",
+			"message": "Vui lòng kiểm tra lại thông tin!!!",
 		})
 		return
 	}

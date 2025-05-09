@@ -1,7 +1,15 @@
 package main
 
-import "english-ai-go/routes"
+import (
+	"english-ai-go/config"
+	"english-ai-go/migrations"
+	"log"
+)
 
 func main() {
-	routes.SetupRouter().Run(":8080")
+	config.ConnectDatabase()
+
+	migrations.Migrate()
+
+	log.Println("Connected to database!")
 }

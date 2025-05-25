@@ -5,7 +5,7 @@ import "time"
 type History struct {
 	ID        uint `gorm:"primaryKey"`
 	UserID    uint
-	Action    string
+	Title     string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 

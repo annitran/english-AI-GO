@@ -5,6 +5,7 @@ import "time"
 type Chat struct {
 	ID        uint `gorm:"primaryKey"`
 	UserID    uint
+	HistoryID uint
 	Message   string
 	IsBot     bool
 	CreatedAt time.Time

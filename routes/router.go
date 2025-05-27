@@ -11,5 +11,7 @@ func SetupRouter() *gin.Engine {
 
 	SetupRegisterRouter(router)
 
+	SetupLoginRouter(router)
+
 	return router
 }

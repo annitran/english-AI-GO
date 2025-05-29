@@ -1,17 +1,25 @@
 package routes
 
 import (
+	"english-ai-go/handlers"
+	"english-ai-go/repositories"
+
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
-	SetupMessageRouter(router)
+	messageHandler := handlers.NewMessageHandler()
+	registerHandler := handlers.NewRegisterHandler(repositories.NewUserRegister())
+	loginHandler := handlers.NewLoginHandler()
 
-	SetupRegisterRouter(router)
+	router.GET("/api/v1/message", messageHandler.Get)
+	router.POST("/api/v1/message", messageHandler.Create)
 
-	SetupLoginRouter(router)
+	router.POST("/api/v1/register", registerHandler.Create)
+
+	router.POST("/api/v1/login", loginHandler.Login)
 
 	return router
 }

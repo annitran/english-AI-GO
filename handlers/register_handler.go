@@ -1,70 +1,64 @@
 package handlers
 
 import (
-	"english-ai-go/config"
-	"english-ai-go/models"
+	"english-ai-go/repositories"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
-type registerHandler struct {
+type registerRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func NewRegisterHandler() *registerHandler {
-	return &registerHandler{}
+type registerHandler struct {
+	repo repositories.UserRegister
+}
+
+func NewRegisterHandler(repo repositories.UserRegister) *registerHandler {
+	return &registerHandler{
+		repo: repo,
+	}
 }
 
 func (h *registerHandler) Create(c *gin.Context) {
-	var req registerHandler
+	var req registerRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil || req.Name == "" || req.Email == "" || req.Password == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Thông tin không hợp lệ!!!",
+			"message": "Invalid information!!!",
 		})
 		return
 	}
 
-	db := config.GetDB()
-
-	// Kiểm tra trùng email hay ko?
-	var existingUser models.User
-	if err := db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+	user, err := h.repo.CheckEmail(req.Email)
+	if err != nil {
+		// lỗi DB 500
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal server error",
+		})
+		return
+	}
+	if user != nil {
+		// email tồn tại
 		c.JSON(http.StatusConflict, gin.H{
-			"message": "Email đã tồn tại!",
+			"message": "Email already exists!",
 		})
 		return
 	}
 
-	// Mã hoá mật khẩu
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	user, err = h.repo.CreateUser(req.Name, req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Không thể tạo tài khoản!!!",
-		})
-		return
-	}
-
-	// Tạo User mới
-	user := models.User{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: string(hashedPassword), // Lưu chuỗi đã mã hoá
-	}
-
-	// Lưu vào DB
-	if err := db.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Không thể lưu tài khoản!",
+			"message": "Cannot register!",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Tạo tài khoản thành công!!!",
+		"message": "Registered successfully!!!",
 		"user":    user,
 	})
 }

@@ -58,7 +58,7 @@ func (h *registerHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Registered successfully!!!",
+		"message": "Registration successful!!!",
 		"user":    user,
 	})
 }

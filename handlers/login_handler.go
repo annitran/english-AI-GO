@@ -1,52 +1,67 @@
 package handlers
 
 import (
-	"english-ai-go/config"
-	"english-ai-go/models"
+	"english-ai-go/middlewares"
+	"english-ai-go/repositories"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
-type loginHandler struct {
+type loginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func NewLoginHandler() *loginHandler {
-	return &loginHandler{}
+type loginHandler struct {
+	repo repositories.UserLogin
+}
+
+func NewLoginHandler(repo repositories.UserLogin) *loginHandler {
+	return &loginHandler{
+		repo: repo,
+	}
 }
 
 func (h *loginHandler) Login(c *gin.Context) {
-	var req loginHandler
+	var req loginRequest
+
 	if err := c.ShouldBindJSON(&req); err != nil || req.Email == "" || req.Password == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Thông tin không hợp lệ!",
+			"message": "Invalid information!",
 		})
 		return
 	}
 
-	db := config.GetDB()
-
-	user := models.User{}
-
-	if err := db.Where("email = ?", req.Email).First(&user).Error; err != nil {
+	user, err := h.repo.AuthenticateUser(req.Email, req.Password)
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "Email hoặc Mật khẩu không đúng!",
+			"message": "Incorrect email or password!",
 		})
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "Email hoặc Mật khẩu không đúng!",
+	token, err := middlewares.GenerateToken(req.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Cannot login!!!",
 		})
 		return
 	}
+
+	c.SetCookie(
+		"token",
+		token,
+		3600/60,
+		"/",   // cookie áp dụng toàn bộ route
+		"",    // domain (để trống nếu không cần)
+		false, // secure = false vì đang dev (true nếu chạy https)
+		true,
+	)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Đăng nhập thành công!",
+		"message": "Login successful!!!",
 		"user":    user,
+		"token":   token,
 	})
 }

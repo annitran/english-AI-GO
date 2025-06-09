@@ -10,7 +10,7 @@ func GetUser(c *gin.Context) {
 	userData, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "User not found in context",
+			"message": "User not found!",
 		})
 		return
 	}

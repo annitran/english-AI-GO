@@ -27,6 +27,7 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/message", messageHandler.Create)
 
 		auth.GET("/user", handlers.GetUser)
+		auth.POST("/logout", handlers.Logout)
 	}
 
 	return router

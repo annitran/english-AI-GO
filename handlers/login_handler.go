@@ -53,8 +53,8 @@ func (h *loginHandler) Login(c *gin.Context) {
 		"token",
 		token,
 		3600/60,
-		"/",   // cookie áp dụng toàn bộ route
-		"",    // domain (để trống nếu không cần)
+		"/",
+		"",
 		false, // secure = false vì đang dev (true nếu chạy https)
 		true,
 	)

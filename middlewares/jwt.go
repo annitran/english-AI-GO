@@ -37,7 +37,7 @@ func AuthToken(repo repositories.UserRepository) gin.HandlerFunc {
 		tokenString, err := c.Cookie("token")
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
-				"message": "Token not found!",
+				"message": "Not logged in!",
 			})
 			c.Abort()
 			return

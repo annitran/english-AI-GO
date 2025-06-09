@@ -5,8 +5,8 @@ import "time"
 type User struct {
 	ID        uint `gorm:"primaryKey"`
 	Name      string
-	Email     string
-	Password  string
+	Email     string `json:"email" gorm:"unique"`
+	Password  string `json:"-"`
 	AvatarURL string
 	CreatedAt time.Time
 	UpdatedAt time.Time

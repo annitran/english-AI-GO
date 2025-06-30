@@ -3,9 +3,9 @@ package models
 import "time"
 
 type History struct {
-	ID        uint `gorm:"primaryKey"`
+	ID        uint `json:"id" gorm:"primaryKey"`
 	UserID    uint
-	Title     string
+	Title     string `json:"title"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 

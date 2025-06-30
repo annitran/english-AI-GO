@@ -52,7 +52,7 @@ func (h *loginHandler) Login(c *gin.Context) {
 	c.SetCookie(
 		"token",
 		token,
-		3600/60,
+		3600/60*5,
 		"/",
 		"",
 		false, // secure = false vì đang dev (true nếu chạy https)

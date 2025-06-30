@@ -24,7 +24,7 @@ func (h *messageHandler) Create(c *gin.Context) {
 	var req messageHandler
 	if err := c.ShouldBindJSON(&req); err != nil || req.Name == "" || req.Age == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Thông tin không hợp lệ!!!",
+			"message": "Invalid information!",
 		})
 		return
 	}

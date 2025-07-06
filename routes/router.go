@@ -24,7 +24,7 @@ func SetupRouter() *gin.Engine {
 	registerHandler := handlers.NewRegisterHandler(repositories.NewUserRegister())
 	loginHandler := handlers.NewLoginHandler(repositories.NewUserLogin())
 
-	messageHandler := handlers.NewMessageHandler()
+	messageHandler := handlers.NewMessageHandler(repositories.NewChatRepository())
 	wordHandler := handlers.NewWordHandler(repositories.NewWordRepository())
 
 	router.POST("/api/v1/register", registerHandler.Create)

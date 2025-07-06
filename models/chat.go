@@ -3,11 +3,11 @@ package models
 import "time"
 
 type Chat struct {
-	ID        uint `gorm:"primaryKey"`
-	UserID    uint
-	HistoryID uint
-	Message   string
-	IsBot     bool
+	ID        uint   `json:"id" gorm:"primaryKey"`
+	UserID    uint   `json:"user_id"`
+	HistoryID *uint  `gorm:"column:history_id"`
+	Message   string `json:"message"`
+	IsBot     bool   `json:"is_bot"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 

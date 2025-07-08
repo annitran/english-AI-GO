@@ -23,6 +23,7 @@ func SetupRouter() *gin.Engine {
 
 	registerHandler := handlers.NewRegisterHandler(repositories.NewUserRegister())
 	loginHandler := handlers.NewLoginHandler(repositories.NewUserLogin())
+	userHandler := handlers.NewUserHandler(repositories.NewUserRepository())
 
 	messageHandler := handlers.NewMessageHandler(repositories.NewChatRepository())
 	wordHandler := handlers.NewWordHandler(repositories.NewWordRepository())
@@ -38,6 +39,7 @@ func SetupRouter() *gin.Engine {
 		auth.POST("/message", messageHandler.Create)
 
 		auth.GET("/user", handlers.GetUser)
+		auth.GET("/user/:id", userHandler.GetUserByID)
 
 		auth.POST("/logout", handlers.Logout)
 

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"english-ai-go/AiServices"
 	"english-ai-go/models"
 	"english-ai-go/repositories"
 
@@ -37,22 +38,28 @@ func (h *messageHandler) Create(c *gin.Context) {
 	user_id := user.(*models.User).ID
 
 	// Lưu tin nhắn người dùng
-	chat := models.Chat{
+	userMsg := models.Chat{
 		UserID:  user_id,
 		Message: req.Message,
 		IsBot:   false,
 	}
-	if err := h.repo.CreateMessage(&chat); err != nil {
+	if err := h.repo.CreateMessage(&userMsg); err != nil {
 		log.Println("Error saving user message:", err)
 	}
 
-	// Phản hồi bot giả lập
-	reply := models.Chat{
+	// Gọi AI bot để phản hồi
+	botReply, err := AiServices.Reply(req.Message)
+	if err != nil {
+		log.Println("AI bot is not responding:", err)
+		botReply = "Sorry, I couldn't respond right now."
+	}
+
+	botMsg := models.Chat{
 		UserID:  user_id,
-		Message: "AI bot replied !!!",
+		Message: botReply,
 		IsBot:   true,
 	}
-	if err := h.repo.CreateMessage(&reply); err != nil {
+	if err := h.repo.CreateMessage(&botMsg); err != nil {
 		log.Println("Error saving bot reply:", err)
 	}
 
@@ -60,7 +67,7 @@ func (h *messageHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusOK, messages)
 }
 
-func (h *messageHandler) Get(c *gin.Context) {
+func (h *messageHandler) GetAll(c *gin.Context) {
 	u, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})

@@ -11,7 +11,8 @@ import (
 )
 
 type createMessageRequest struct {
-	Message string `json:"message" binding:"required"`
+	Message   string `json:"message" binding:"required"`
+	HistoryID uint   `json:"history_id"`
 }
 
 type messageHandler struct {
@@ -36,12 +37,30 @@ func (h *messageHandler) Create(c *gin.Context) {
 
 	user, _ := c.Get("user") // middleware đã auth trước đó
 	user_id := user.(*models.User).ID
+	historyID := req.HistoryID
+
+	// Nếu không có history thì tạo mới
+	if historyID == 0 {
+		newHistory := models.History{
+			Title:  req.Message, // Dùng message đầu tiên làm title
+			UserID: user_id,
+		}
+		if err := h.repo.CreateHistory(&newHistory); err != nil {
+			log.Println("Error creating history:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to create history",
+			})
+			return
+		}
+		historyID = newHistory.ID
+	}
 
 	// Lưu tin nhắn người dùng
 	userMsg := models.Chat{
-		UserID:  user_id,
-		Message: req.Message,
-		IsBot:   false,
+		UserID:    user_id,
+		Message:   req.Message,
+		IsBot:     false,
+		HistoryID: historyID,
 	}
 	if err := h.repo.CreateMessage(&userMsg); err != nil {
 		log.Println("Error saving user message:", err)
@@ -55,16 +74,20 @@ func (h *messageHandler) Create(c *gin.Context) {
 	}
 
 	botMsg := models.Chat{
-		UserID:  user_id,
-		Message: botReply,
-		IsBot:   true,
+		UserID:    user_id,
+		Message:   botReply,
+		IsBot:     true,
+		HistoryID: historyID,
 	}
 	if err := h.repo.CreateMessage(&botMsg); err != nil {
 		log.Println("Error saving bot reply:", err)
 	}
 
-	messages, _ := h.repo.GetMessagesByUser(user_id)
-	c.JSON(http.StatusOK, messages)
+	messages, _ := h.repo.GetMessagesByHistoryID(historyID)
+	c.JSON(http.StatusOK, gin.H{
+		"messages":   messages,
+		"history_id": historyID,
+	})
 }
 
 func (h *messageHandler) GetAll(c *gin.Context) {

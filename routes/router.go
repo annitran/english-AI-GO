@@ -27,6 +27,7 @@ func SetupRouter() *gin.Engine {
 
 	messageHandler := handlers.NewMessageHandler(repositories.NewChatRepository())
 	wordHandler := handlers.NewWordHandler(repositories.NewWordRepository())
+	historyHandler := handlers.NewHistoryHandler(repositories.NewHistoryRepository())
 
 	router.POST("/api/v1/register", registerHandler.Create)
 	router.POST("/api/v1/login", loginHandler.Login)
@@ -45,6 +46,9 @@ func SetupRouter() *gin.Engine {
 
 		auth.POST("/users/words", wordHandler.Create)
 		auth.GET("/users/words", wordHandler.GetList)
+
+		auth.GET("/histories", historyHandler.GetList)
+		auth.POST("/histories", historyHandler.Create)
 	}
 
 	return router

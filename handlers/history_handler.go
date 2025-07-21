@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type createHistoryRequest struct {
@@ -38,7 +39,7 @@ func (h *historyHandler) Create(c *gin.Context) {
 		Title:  req.Title,
 	}
 
-	if err := h.repo.CreateHistory(&history); err != nil {
+	if err := h.repo.CreateHistoryTitle(&history); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to create history",
 		})
@@ -61,4 +62,23 @@ func (h *historyHandler) GetList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"histories": histories})
+}
+
+func (h *historyHandler) GetByID(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid history ID"})
+		return
+	}
+
+	history, err := h.repo.GetHistoryByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get history"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"history": history,
+	})
 }

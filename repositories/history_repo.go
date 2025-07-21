@@ -7,7 +7,7 @@ import (
 )
 
 type HistoryRepository interface {
-	CreateHistory(history *models.History) error
+	CreateHistoryTitle(history *models.History) error
 	GetHistoriesByUser(userID uint) ([]models.History, error)
 	GetHistoryByID(id uint) (*models.History, error)
 }
@@ -22,7 +22,7 @@ func NewHistoryRepository() HistoryRepository {
 	}
 }
 
-func (r *historyRepository) CreateHistory(history *models.History) error {
+func (r *historyRepository) CreateHistoryTitle(history *models.History) error {
 	return r.db.Create(history).Error
 }
 
@@ -40,5 +40,9 @@ func (r *historyRepository) GetHistoryByID(id uint) (*models.History, error) {
 	err := r.db.
 		Preload("Chats").
 		First(&history, id).Error
+	if err != nil {
+		return nil, err
+	}
+
 	return &history, err
 }

@@ -5,7 +5,7 @@ import "time"
 type Chat struct {
 	ID        uint   `json:"id" gorm:"primaryKey"`
 	UserID    uint   `json:"user_id"`
-	HistoryID *uint  `gorm:"column:history_id"`
+	HistoryID uint   `gorm:"history_id"`
 	Message   string `json:"message"`
 	IsBot     bool   `json:"is_bot"`
 	CreatedAt time.Time

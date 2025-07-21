@@ -8,19 +8,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type createMessageRequest struct {
-	Message string `json:"message" binding:"required"`
+	Message   string `json:"message" binding:"required"`
+	HistoryID uint   `json:"history_id"`
 }
 
 type messageHandler struct {
-	repo repositories.ChatRepository
+	chatRepo    repositories.ChatRepository
+	historyRepo repositories.HistoryRepository
 }
 
-func NewMessageHandler(repo repositories.ChatRepository) *messageHandler {
+func NewMessageHandler(chatRepo repositories.ChatRepository, historyRepo repositories.HistoryRepository) *messageHandler {
 	return &messageHandler{
-		repo: repo,
+		chatRepo:    chatRepo,
+		historyRepo: historyRepo,
 	}
 }
 
@@ -37,59 +41,73 @@ func (h *messageHandler) Create(c *gin.Context) {
 	user, _ := c.Get("user") // middleware đã auth trước đó
 	user_id := user.(*models.User).ID
 
+	// Nếu không có history thì tạo mới
+	historyID := req.HistoryID
+	if historyID == 0 {
+		newHistory := models.History{
+			Title:  req.Message, // Dùng message đầu tiên làm title
+			UserID: user_id,
+		}
+		if err := h.historyRepo.CreateHistoryTitle(&newHistory); err != nil {
+			log.Println("Error creating history:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to create history",
+			})
+			return
+		}
+		historyID = newHistory.ID
+	}
+
 	// Lưu tin nhắn người dùng
 	userMsg := models.Chat{
-		UserID:  user_id,
-		Message: req.Message,
-		IsBot:   false,
+		UserID:    user_id,
+		Message:   req.Message,
+		IsBot:     false,
+		HistoryID: historyID,
 	}
-	if err := h.repo.CreateMessage(&userMsg); err != nil {
+	if err := h.chatRepo.CreateMessage(&userMsg); err != nil {
 		log.Println("Error saving user message:", err)
 	}
 
 	// Gọi AI bot để phản hồi
-	botReply, err := AiServices.Reply(req.Message)
+	ai := AiServices.NewAIService()
+	botReply, err := ai.Reply(req.Message)
 	if err != nil {
 		log.Println("AI bot is not responding:", err)
 		botReply = "Sorry, I couldn't respond right now."
 	}
 
 	botMsg := models.Chat{
-		UserID:  user_id,
-		Message: botReply,
-		IsBot:   true,
+		UserID:    user_id,
+		Message:   botReply,
+		IsBot:     true,
+		HistoryID: historyID,
 	}
-	if err := h.repo.CreateMessage(&botMsg); err != nil {
+	if err := h.chatRepo.CreateMessage(&botMsg); err != nil {
 		log.Println("Error saving bot reply:", err)
 	}
 
-	messages, _ := h.repo.GetMessagesByUser(user_id)
-	c.JSON(http.StatusOK, messages)
+	c.JSON(http.StatusOK, gin.H{
+		"messages":   []models.Chat{userMsg, botMsg},
+		"history_id": historyID,
+	})
 }
 
-func (h *messageHandler) GetAll(c *gin.Context) {
-	u, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+func (h *messageHandler) GetAllByHistoryID(c *gin.Context) {
+	historyID_str := c.Query("history_id")
+	historyID, err := strconv.Atoi(historyID_str)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid HistoryID"})
 		return
 	}
 
-	user, ok := u.(*models.User)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cast user"})
-		return
-	}
-
-	user_id := user.ID
-
-	messages, err := h.repo.GetMessagesByUser(user_id)
+	messages, err := h.chatRepo.GetMessagesByHistoryID(uint(historyID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to fetch messages"},
+			"error": "Failed to get messages"},
 		)
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"messages": messages,
 	})

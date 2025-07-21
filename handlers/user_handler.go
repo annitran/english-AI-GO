@@ -16,22 +16,6 @@ func NewUserHandler(repo repositories.UserRepository) *userHandler {
 	return &userHandler{repo: repo}
 }
 
-func GetUser(c *gin.Context) {
-	userData, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "User not found!",
-		})
-		return
-	}
-
-	user := userData.(*models.User)
-
-	c.JSON(http.StatusOK, gin.H{
-		"user": user,
-	})
-}
-
 func (h *userHandler) GetUserByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

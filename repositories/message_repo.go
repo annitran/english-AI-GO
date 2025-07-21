@@ -8,7 +8,7 @@ import (
 
 type ChatRepository interface {
 	CreateMessage(chat *models.Chat) error
-	GetMessagesByUser(userID uint) ([]models.Chat, error)
+	GetMessagesByHistoryID(historyID uint) ([]models.Chat, error)
 }
 
 type chatRepository struct {
@@ -25,10 +25,10 @@ func (r *chatRepository) CreateMessage(chat *models.Chat) error {
 	return r.db.Create(chat).Error
 }
 
-func (r *chatRepository) GetMessagesByUser(userID uint) ([]models.Chat, error) {
+func (r *chatRepository) GetMessagesByHistoryID(historyID uint) ([]models.Chat, error) {
 	var chats []models.Chat
 	err := r.db.
-		Where("user_id = ?", userID).
+		Where("history_id = ?", historyID).
 		Order("created_at asc").
 		Find(&chats).Error
 	return chats, err

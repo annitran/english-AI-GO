@@ -24,7 +24,7 @@ func SetupRouter() *gin.Engine {
 	registerHandler := handlers.NewRegisterHandler(repositories.NewUserRegister())
 	loginHandler := handlers.NewLoginHandler(repositories.NewUserLogin())
 
-	messageHandler := handlers.NewMessageHandler()
+	messageHandler := handlers.NewMessageHandler(repositories.NewChatRepository())
 	wordHandler := handlers.NewWordHandler(repositories.NewWordRepository())
 
 	router.POST("/api/v1/register", registerHandler.Create)
@@ -34,7 +34,7 @@ func SetupRouter() *gin.Engine {
 	userRepo := repositories.NewUserRepository()
 	auth := router.Group("/api/v1", middlewares.AuthToken(userRepo))
 	{
-		auth.GET("/message", messageHandler.Get)
+		auth.GET("/message", messageHandler.GetAll)
 		auth.POST("/message", messageHandler.Create)
 
 		auth.GET("/user", handlers.GetUser)

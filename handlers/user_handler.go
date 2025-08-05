@@ -16,20 +16,32 @@ func NewUserHandler(repo repositories.UserRepository) *userHandler {
 	return &userHandler{repo: repo}
 }
 
-func GetUser(c *gin.Context) {
-	userData, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "User not found!",
-		})
+func (h *userHandler) GetUserByID(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	user := userData.(*models.User)
+	// Lấy user từ token
+	userData, _ := c.Get("user")
+	currentUser := userData.(*models.User)
 
-	c.JSON(http.StatusOK, gin.H{
-		"user": user,
-	})
+	// So sánh ID token và param
+	if uint(id) != currentUser.ID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
+	// Lấy user từ DB
+	user, err := h.repo.FindByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
 func (h *userHandler) GetUserByID(c *gin.Context) {

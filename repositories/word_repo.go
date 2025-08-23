@@ -9,7 +9,9 @@ import (
 type WordRepository interface {
 	CreateWord(word *models.Word) error
 	IsWordExist(userID uint, word string) (bool, error)
-	GetWordList(userID uint) ([]models.Word, error)
+	GetWords(userID uint, search string) ([]models.Word, error)
+	UpdateWord(id uint, data map[string]interface{}) (*models.Word, error)
+	Delete(id uint, userID uint) error
 }
 
 type wordRepository struct {
@@ -34,8 +36,31 @@ func (r *wordRepository) IsWordExist(userID uint, word string) (bool, error) {
 	return count > 0, err
 }
 
-func (r *wordRepository) GetWordList(userID uint) ([]models.Word, error) {
+func (r *wordRepository) GetWords(userID uint, search string) ([]models.Word, error) {
 	var words []models.Word
-	err := r.db.Where("user_id = ?", userID).Find(&words).Error
-	return words, err
+	query := r.db.Where("user_id = ?", userID)
+	if search != "" {
+		query = query.Where("word LIKE ?", "%"+search+"%")
+	}
+	if err := query.Find(&words).Error; err != nil {
+		return nil, err
+	}
+	return words, nil
+}
+
+func (r *wordRepository) UpdateWord(id uint, data map[string]interface{}) (*models.Word, error) {
+	var word models.Word
+	if err := r.db.First(&word, id).Error; err != nil {
+		return nil, err
+	}
+
+	if err := r.db.Model(&word).Updates(data).Error; err != nil {
+		return nil, err
+	}
+
+	return &word, nil
+}
+
+func (r *wordRepository) Delete(id uint, userID uint) error {
+	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Word{}).Error
 }

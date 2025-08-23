@@ -7,7 +7,7 @@ type History struct {
 	UserID    uint      `json:"user_id"`
 	Title     string    `json:"title"`
 	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time
+	UpdatedAt time.Time `json:"updated_at"`
 
 	User  User   `gorm:"foreignKey:UserID;references:ID"`
 	Chats []Chat `gorm:"foreignKey:HistoryID"`

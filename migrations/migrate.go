@@ -1,11 +1,10 @@
 package migrations
 
 import (
-	"fmt"
-	"log"
-
 	"english-ai-go/config"
 	"english-ai-go/models"
+	"fmt"
+	"log"
 )
 
 func Migrate() {

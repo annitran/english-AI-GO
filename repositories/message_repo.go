@@ -7,8 +7,8 @@ import (
 )
 
 type ChatRepository interface {
-	CreateMessage(chat *models.Chat) error
-	GetMessagesByHistoryID(historyID uint) ([]models.Chat, error)
+	CreateMessage(message *models.Chat) error
+	GetMessagesByHistory(historyID uint) ([]models.Chat, error)
 }
 
 type chatRepository struct {
@@ -21,15 +21,15 @@ func NewChatRepository() ChatRepository {
 	}
 }
 
-func (r *chatRepository) CreateMessage(chat *models.Chat) error {
-	return r.db.Create(chat).Error
+func (r *chatRepository) CreateMessage(message *models.Chat) error {
+	return r.db.Create(message).Error
 }
 
-func (r *chatRepository) GetMessagesByHistoryID(historyID uint) ([]models.Chat, error) {
-	var chats []models.Chat
+func (r *chatRepository) GetMessagesByHistory(historyID uint) ([]models.Chat, error) {
+	var messages []models.Chat
 	err := r.db.
 		Where("history_id = ?", historyID).
 		Order("created_at asc").
-		Find(&chats).Error
-	return chats, err
+		Find(&messages).Error
+	return messages, err
 }

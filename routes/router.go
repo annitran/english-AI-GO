@@ -4,7 +4,6 @@ import (
 	"english-ai-go/handlers"
 	"english-ai-go/middlewares"
 	"english-ai-go/repositories"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -24,7 +23,6 @@ func SetupRouter() *gin.Engine {
 	registerHandler := handlers.NewRegisterHandler(repositories.NewUserRegister())
 	loginHandler := handlers.NewLoginHandler(repositories.NewUserLogin())
 	userHandler := handlers.NewUserHandler(repositories.NewUserRepository())
-
 	messageHandler := handlers.NewMessageHandler(
 		repositories.NewChatRepository(),
 		repositories.NewHistoryRepository(),
@@ -39,18 +37,22 @@ func SetupRouter() *gin.Engine {
 	userRepo := repositories.NewUserRepository()
 	auth := router.Group("/api/v1", middlewares.AuthToken(userRepo))
 	{
-		auth.GET("/messages", messageHandler.GetAllByHistoryID)
-		auth.POST("/message", messageHandler.Create)
+		auth.POST("/chat", messageHandler.Create)
 
+		auth.GET("/user", handlers.GetUser)
 		auth.GET("/user/:id", userHandler.GetUserByID)
+		auth.PUT("/user/:id", userHandler.UpdateUser)
+		auth.PUT("/user/:id/password", userHandler.ChangePassword)
 
 		auth.POST("/logout", handlers.Logout)
 
-		auth.POST("/users/words", wordHandler.Create)
-		auth.GET("/users/words", wordHandler.GetList)
+		auth.POST("/words", wordHandler.Create)
+		auth.GET("/words", wordHandler.GetWords)
+		auth.PUT("/words/:id", wordHandler.UpdateWord)
+		auth.DELETE("/words/:id", wordHandler.DeleteWord)
 
 		auth.GET("/histories", historyHandler.GetList)
-		auth.GET("/history/:id", historyHandler.GetByID)
+		auth.GET("/chat/:id", historyHandler.GetHistoryByID)
 	}
 
 	return router

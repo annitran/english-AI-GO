@@ -8,8 +8,8 @@ type User struct {
 	Email     string `json:"email" gorm:"unique"`
 	Password  string `json:"-"`
 	AvatarURL string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	Chats     []Chat    `gorm:"foreignKey:UserID"`
 	Words     []Word    `gorm:"foreignKey:UserID"`

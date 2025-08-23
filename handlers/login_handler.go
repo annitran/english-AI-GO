@@ -3,7 +3,6 @@ package handlers
 import (
 	"english-ai-go/middlewares"
 	"english-ai-go/repositories"
-
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -52,7 +51,7 @@ func (h *loginHandler) Login(c *gin.Context) {
 	c.SetCookie(
 		"token",
 		token,
-		3600/60*5,
+		3600/60*10,
 		"/",
 		"",
 		false, // secure = false vì đang dev (true nếu chạy https)

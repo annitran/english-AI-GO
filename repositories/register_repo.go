@@ -3,7 +3,6 @@ package repositories
 import (
 	"english-ai-go/config"
 	"english-ai-go/models"
-
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

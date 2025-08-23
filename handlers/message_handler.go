@@ -4,11 +4,9 @@ import (
 	"english-ai-go/AiServices"
 	"english-ai-go/models"
 	"english-ai-go/repositories"
-
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 type createMessageRequest struct {
@@ -28,9 +26,9 @@ func NewMessageHandler(chatRepo repositories.ChatRepository, historyRepo reposit
 	}
 }
 
+// POST /api/v1/chat
 func (h *messageHandler) Create(c *gin.Context) {
 	var req createMessageRequest
-
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid message!",
@@ -70,8 +68,7 @@ func (h *messageHandler) Create(c *gin.Context) {
 	}
 
 	// Gọi AI bot để phản hồi
-	ai := AiServices.NewAIService()
-	botReply, err := ai.Reply(req.Message)
+	botReply, err := AiServices.AskGemini(req.Message)
 	if err != nil {
 		log.Println("AI bot is not responding:", err)
 		botReply = "Sorry, I couldn't respond right now."
@@ -88,27 +85,10 @@ func (h *messageHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"messages":   []models.Chat{userMsg, botMsg},
+		"messages": []models.Chat{
+			userMsg,
+			botMsg,
+		},
 		"history_id": historyID,
-	})
-}
-
-func (h *messageHandler) GetAllByHistoryID(c *gin.Context) {
-	historyID_str := c.Query("history_id")
-	historyID, err := strconv.Atoi(historyID_str)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid HistoryID"})
-		return
-	}
-
-	messages, err := h.chatRepo.GetMessagesByHistoryID(uint(historyID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get messages"},
-		)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"messages": messages,
 	})
 }

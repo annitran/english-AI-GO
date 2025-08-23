@@ -3,9 +3,9 @@ package handlers
 import (
 	"english-ai-go/models"
 	"english-ai-go/repositories"
-
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type createWordRequest struct {
@@ -24,6 +24,7 @@ func NewWordHandler(repo repositories.WordRepository) *wordHandler {
 	}
 }
 
+// POST /api/v1/words
 func (h *wordHandler) Create(c *gin.Context) {
 	var req createWordRequest
 
@@ -34,7 +35,6 @@ func (h *wordHandler) Create(c *gin.Context) {
 		})
 		return
 	}
-
 	user := userData.(*models.User)
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -77,7 +77,8 @@ func (h *wordHandler) Create(c *gin.Context) {
 	})
 }
 
-func (h *wordHandler) GetList(c *gin.Context) {
+// GET /api/v1/words?search=abc
+func (h *wordHandler) GetWords(c *gin.Context) {
 	userData, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -86,8 +87,9 @@ func (h *wordHandler) GetList(c *gin.Context) {
 		return
 	}
 	user := userData.(*models.User)
+	search := c.Query("search")
 
-	words, err := h.repo.GetWordList(user.ID)
+	words, err := h.repo.GetWords(user.ID, search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Failed to get words!",
@@ -98,4 +100,52 @@ func (h *wordHandler) GetList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"words": words,
 	})
+}
+
+// PUT /api/v1/words/:id
+func (h *wordHandler) UpdateWord(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid word id"})
+		return
+	}
+
+	var req map[string]interface{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	updatedWord, err := h.repo.UpdateWord(uint(id), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"word": updatedWord})
+}
+
+// DELETE /api/v1/words/:id
+func (h *wordHandler) DeleteWord(c *gin.Context) {
+	userData, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found!"})
+		return
+	}
+	user := userData.(*models.User)
+
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid word id"})
+		return
+	}
+
+	if err := h.repo.Delete(uint(id), user.ID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete word"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
